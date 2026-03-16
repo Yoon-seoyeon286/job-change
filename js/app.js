@@ -325,9 +325,8 @@ function renderWeeklyPlan() {
   }).join('');
 
   // 과목 체크박스
-  const current = weeklyPlan[selectedDay] || [];
-  const isAuto  = current.length === 0;
-
+  const current = weeklyPlan[selectedDay];
+  const isAuto  = current === undefined;
   const subjList = document.getElementById('weekly-subjects');
   subjList.innerHTML = `
     <div class="auto-row">
@@ -339,7 +338,7 @@ function renderWeeklyPlan() {
     ${subjects.map(s => `
     <label class="subj-check-row ${isAuto ? 'disabled' : ''}">
       <input type="checkbox" class="subj-chk" data-id="${s.id}"
-        ${current.includes(s.id) ? 'checked' : ''}
+        ${!isAuto && current.includes(s.id) ? 'checked' : ''}
         ${isAuto ? 'disabled' : ''}
         onchange="saveWeeklyDay()">
       <span class="subject-dot" style="background:${s.color}"></span>
