@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#6366f1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>이직 준비 플래너</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="app">
+
+  <!-- ── 대시보드 ──────────────────────────────────────────── -->
+  <section id="view-dashboard" class="view">
+    <div class="dash-header">
+      <h1 id="dash-date">오늘</h1>
+      <div class="sub" id="dash-time-range">21:00 ~ 01:00</div>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-label">
+        <span>오늘 진행률</span>
+        <span id="dash-progress-text">0/0 완료</span>
+      </div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="dash-progress-bar" style="width:0%"></div>
+      </div>
+    </div>
+
+    <div id="session-list"></div>
+  </section>
+
+  <!-- ── 기록 (달력) ──────────────────────────────────────── -->
+  <section id="view-history" class="view">
+    <div class="history-header">
+      <button class="month-nav" onclick="prevMonth()">‹</button>
+      <h2 id="history-month-label"></h2>
+      <button class="month-nav" onclick="nextMonth()">›</button>
+    </div>
+    <div id="calendar-area"></div>
+    <div id="day-detail" class="day-detail"></div>
+  </section>
+
+  <!-- ── 통계 ────────────────────────────────────────────── -->
+  <section id="view-stats" class="view">
+    <div class="section-header">통계</div>
+
+    <div class="stats-cards">
+      <div class="stat-card">
+        <div class="val" id="stat-total">0분</div>
+        <div class="lbl">총 공부 시간</div>
+      </div>
+      <div class="stat-card">
+        <div class="val" id="stat-streak">0일</div>
+        <div class="lbl">연속 달성</div>
+      </div>
+      <div class="stat-card">
+        <div class="val" id="stat-days">0일</div>
+        <div class="lbl">공부한 날</div>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <h3>최근 7일 공부 시간 (분)</h3>
+      <canvas id="stats-chart" height="160"></canvas>
+    </div>
+
+    <div class="chart-card">
+      <h3>과목별 누적 시간</h3>
+      <canvas id="subject-chart" height="200"></canvas>
+    </div>
+  </section>
+
+  <!-- ── 설정 ────────────────────────────────────────────── -->
+  <section id="view-settings" class="view">
+    <div class="section-header">설정</div>
+
+    <div class="settings-section">
+      <h3>공부 시간</h3>
+      <div class="time-grid">
+        <div class="time-item">
+          <label>시작</label>
+          <input type="time" id="set-start" value="21:00">
+        </div>
+        <div class="time-item">
+          <label>종료</label>
+          <input type="time" id="set-end" value="01:00">
+        </div>
+        <div class="time-item">
+          <label>휴식(분)</label>
+          <input type="number" id="set-break" value="10" min="0" max="30">
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <h3>과목 비중 (0=제외, 5=최고)</h3>
+      <div id="subject-settings"></div>
+    </div>
+
+    <button class="save-btn" onclick="saveConfig()">설정 저장</button>
+    <button class="reset-btn" onclick="resetTodaySchedule()">오늘 시간표 다시 생성</button>
+  </section>
+
+  <!-- ── 하단 내비게이션 ──────────────────────────────────── -->
+  <nav class="bottom-nav">
+    <button class="nav-btn active" data-view="dashboard" onclick="showView('dashboard')">
+      <span class="nav-icon">📅</span>
+      <span>오늘</span>
+    </button>
+    <button class="nav-btn" data-view="history" onclick="showView('history')">
+      <span class="nav-icon">📆</span>
+      <span>기록</span>
+    </button>
+    <button class="nav-btn" data-view="stats" onclick="showView('stats')">
+      <span class="nav-icon">📊</span>
+      <span>통계</span>
+    </button>
+    <button class="nav-btn" data-view="settings" onclick="showView('settings')">
+      <span class="nav-icon">⚙️</span>
+      <span>설정</span>
+    </button>
+  </nav>
+
+  <!-- ── 실제 공부 시간 기록 모달 ─────────────────────────── -->
+  <div id="actual-modal" class="modal-overlay">
+    <div class="modal-box">
+      <h3 id="modal-title">공부 시간 기록</h3>
+      <div class="modal-row">
+        <label>계획 시간</label>
+        <span id="modal-planned">—</span>
+      </div>
+      <div class="modal-row">
+        <label>실제 공부한 시간 (분)</label>
+        <input type="number" id="modal-actual" class="modal-input" min="0" max="240" value="0">
+      </div>
+      <div class="modal-actions">
+        <button class="btn-ghost" onclick="closeModal()">취소</button>
+        <button class="btn-primary" onclick="saveActual()">완료 기록</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 토스트 ─────────────────────────────────────────── -->
+  <div id="toast"></div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/schedule.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
