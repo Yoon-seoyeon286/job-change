@@ -66,5 +66,16 @@ const Storage = {
       this.saveSessions(date, sessions);
     }
     return sessions;
+  },
+
+  // 요일별 과목 설정
+  // weeklyPlan: { 0: ['cert','cpp'], 1: [...], ... }  (0=일 ~ 6=토)
+  // 해당 요일 키가 없거나 빈 배열이면 가중치 자동 배분
+  getWeeklyPlan() {
+    const saved = localStorage.getItem('weeklyPlan');
+    return saved ? JSON.parse(saved) : {};
+  },
+  saveWeeklyPlan(plan) {
+    localStorage.setItem('weeklyPlan', JSON.stringify(plan));
   }
 };

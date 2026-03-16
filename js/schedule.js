@@ -27,42 +27,48 @@ function minutesToTime(totalMin) {
 // 하루 4시간(240분)을 가중치에 따라 과목별로 배분
 // 같은 날짜는 항상 같은 결과를 반환 (시드 기반)
 function generateSchedule(dateStr) {
-  const subjects = Storage.getSubjects().filter(s => s.weight > 0);
-  const config   = Storage.getConfig();
+  const allSubjects = Storage.getSubjects();
+  const config      = Storage.getConfig();
+  const dayOfWeek   = new Date(dateStr).getDay(); // 0=일 ~ 6=토
+  const weeklyPlan  = Storage.getWeeklyPlan();
 
   let startMin = parseTime(config.startTime);
   let endMin   = parseTime(config.endTime);
-  if (endMin < startMin) endMin += 24 * 60; // 자정 넘기는 경우
+  if (endMin < startMin) endMin += 24 * 60;
 
-  const totalMin   = endMin - startMin;
-  const breakMin   = config.breakMinutes;
-  const rand       = seededRand(dateSeed(dateStr));
-  const dayOfWeek  = new Date(dateStr).getDay(); // 0=일 ~ 6=토
+  const totalMin = endMin - startMin;
+  const breakMin = config.breakMinutes;
 
-  // 오늘 포함할 과목 선택: 가중치 높을수록 자주 등장
-  // 가중치 합 기준 4~5개 선택
-  const pool = [];
-  subjects.forEach(s => {
-    for (let i = 0; i < s.weight; i++) pool.push(s.id);
-  });
+  let todaySubjects;
 
-  // 셔플
-  for (let i = pool.length - 1; i > 0; i--) {
-    const j = Math.floor(rand() * (i + 1));
-    [pool[i], pool[j]] = [pool[j], pool[i]];
+  if (weeklyPlan[dayOfWeek] && weeklyPlan[dayOfWeek].length > 0) {
+    // 요일별 수동 설정 사용
+    todaySubjects = weeklyPlan[dayOfWeek]
+      .map(id => allSubjects.find(s => s.id === id))
+      .filter(Boolean);
+  } else {
+    // 가중치 기반 자동 선택
+    const subjects = allSubjects.filter(s => s.weight > 0);
+    const rand     = seededRand(dateSeed(dateStr));
+
+    const pool = [];
+    subjects.forEach(s => {
+      for (let i = 0; i < s.weight; i++) pool.push(s.id);
+    });
+    for (let i = pool.length - 1; i > 0; i--) {
+      const j = Math.floor(rand() * (i + 1));
+      [pool[i], pool[j]] = [pool[j], pool[i]];
+    }
+    const seen = new Set();
+    const todayIds = [];
+    for (const id of pool) {
+      if (!seen.has(id)) { seen.add(id); todayIds.push(id); }
+      if (todayIds.length >= 4) break;
+    }
+    todaySubjects = todayIds.map(id => subjects.find(s => s.id === id));
   }
 
-  // 중복 제거하되 순서 유지, 최대 4개
-  const seen = new Set();
-  const todayIds = [];
-  for (const id of pool) {
-    if (!seen.has(id)) { seen.add(id); todayIds.push(id); }
-    if (todayIds.length >= 4) break;
-  }
-
-  // 선택된 과목의 가중치 합
-  const todaySubjects = todayIds.map(id => subjects.find(s => s.id === id));
-  const weightSum     = todaySubjects.reduce((a, s) => a + s.weight, 0);
+  const weightSum = todaySubjects.reduce((a, s) => a + (s.weight || 1), 0);
 
   // 세션별 시간 배분 (break 시간 제외)
   const sessionCount   = todaySubjects.length;

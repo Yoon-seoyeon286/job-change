@@ -275,6 +275,7 @@ function renderSettings() {
   document.getElementById('set-start').value = config.startTime;
   document.getElementById('set-end').value   = config.endTime;
   document.getElementById('set-break').value = config.breakMinutes;
+  renderWeeklyPlan();
 
   const list = document.getElementById('subject-settings');
   list.innerHTML = subjects.map((s, i) => `
@@ -307,6 +308,70 @@ function updateColor(i, val) {
   subjects[i].color = val;
   Storage.saveSubjects(subjects);
 }
+// ─── 요일별 과목 설정 ────────────────────────────────────────
+const DAY_NAMES = ['일', '월', '화', '수', '목', '금', '토'];
+let selectedDay = new Date().getDay();
+
+function renderWeeklyPlan() {
+  const subjects   = Storage.getSubjects();
+  const weeklyPlan = Storage.getWeeklyPlan();
+
+  // 요일 탭
+  const tabs = document.getElementById('day-tabs');
+  tabs.innerHTML = DAY_NAMES.map((name, i) => {
+    const hasCustom = weeklyPlan[i] && weeklyPlan[i].length > 0;
+    return `<button class="day-tab ${i === selectedDay ? 'active' : ''} ${hasCustom ? 'custom' : ''}"
+      onclick="selectDay(${i})">${name}</button>`;
+  }).join('');
+
+  // 과목 체크박스
+  const current = weeklyPlan[selectedDay] || [];
+  const isAuto  = current.length === 0;
+
+  const subjList = document.getElementById('weekly-subjects');
+  subjList.innerHTML = `
+    <div class="auto-row">
+      <label class="auto-label">
+        <input type="checkbox" id="day-auto" onchange="toggleDayAuto(this.checked)" ${isAuto ? 'checked' : ''}>
+        자동 배분 (가중치 기반)
+      </label>
+    </div>
+    ${subjects.map(s => `
+    <label class="subj-check-row ${isAuto ? 'disabled' : ''}">
+      <input type="checkbox" class="subj-chk" data-id="${s.id}"
+        ${current.includes(s.id) ? 'checked' : ''}
+        ${isAuto ? 'disabled' : ''}
+        onchange="saveWeeklyDay()">
+      <span class="subject-dot" style="background:${s.color}"></span>
+      <span>${s.icon} ${s.name}</span>
+    </label>`).join('')}`;
+}
+
+function selectDay(day) {
+  selectedDay = day;
+  renderWeeklyPlan();
+}
+
+function toggleDayAuto(isAuto) {
+  const weeklyPlan = Storage.getWeeklyPlan();
+  if (isAuto) {
+    delete weeklyPlan[selectedDay];
+  } else {
+    weeklyPlan[selectedDay] = [];
+  }
+  Storage.saveWeeklyPlan(weeklyPlan);
+  renderWeeklyPlan();
+}
+
+function saveWeeklyDay() {
+  const checked = [...document.querySelectorAll('.subj-chk:checked')].map(el => el.dataset.id);
+  const weeklyPlan = Storage.getWeeklyPlan();
+  weeklyPlan[selectedDay] = checked;
+  Storage.saveWeeklyPlan(weeklyPlan);
+  renderWeeklyPlan();
+  showToast(`${DAY_NAMES[selectedDay]}요일 설정 저장`);
+}
+
 function saveConfig() {
   const config = {
     startTime:    document.getElementById('set-start').value,

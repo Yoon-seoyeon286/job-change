@@ -459,6 +459,75 @@ html, body {
 /* ─── 섹션 헤더 ─────────────────────────────────────────────── */
 .section-header { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
 
+/* ─── 요일별 과목 설정 ──────────────────────────────────────── */
+.day-tabs {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-bottom: 12px;
+}
+.day-tab {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--muted);
+  font-size: 13px;
+  padding: 8px 0;
+  cursor: pointer;
+  transition: all .15s;
+  position: relative;
+}
+.day-tab.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  font-weight: 700;
+}
+.day-tab.custom::after {
+  content: '';
+  position: absolute;
+  top: 4px; right: 4px;
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--warning);
+}
+.day-tab.active.custom::after { background: #fff; }
+
+.weekly-subjects {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.auto-row {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+}
+.auto-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--muted);
+  cursor: pointer;
+}
+.auto-label input { accent-color: var(--accent); width: 16px; height: 16px; }
+
+.subj-check-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 14px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background .1s;
+  border-bottom: 1px solid var(--border);
+}
+.subj-check-row:last-child { border-bottom: none; }
+.subj-check-row:hover { background: var(--surface2); }
+.subj-check-row.disabled { opacity: .4; pointer-events: none; }
+.subj-check-row input { accent-color: var(--accent); width: 16px; height: 16px; flex-shrink: 0; }
+
 /* ─── 스크롤바 ──────────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
