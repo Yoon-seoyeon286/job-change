@@ -1,4 +1,4 @@
-const CACHE_NAME = 'study-planner-v2';
+const CACHE_NAME = 'study-planner-v3';
 
 // self.location.pathname 기반으로 base 경로 자동 감지
 const BASE = self.location.pathname.replace('/sw.js', '');
