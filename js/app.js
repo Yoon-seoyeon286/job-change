@@ -359,6 +359,9 @@ function toggleDayAuto(isAuto) {
     weeklyPlan[selectedDay] = [];
   }
   Storage.saveWeeklyPlan(weeklyPlan);
+  if (selectedDay === new Date().getDay()) {
+    Storage.saveSessions(today(), generateSchedule(today()));
+  }
   renderWeeklyPlan();
 }
 
@@ -367,6 +370,9 @@ function saveWeeklyDay() {
   const weeklyPlan = Storage.getWeeklyPlan();
   weeklyPlan[selectedDay] = checked;
   Storage.saveWeeklyPlan(weeklyPlan);
+  if (selectedDay === new Date().getDay()) {
+    Storage.saveSessions(today(), generateSchedule(today()));
+  }
   renderWeeklyPlan();
   showToast(`${DAY_NAMES[selectedDay]}요일 설정 저장`);
 }
