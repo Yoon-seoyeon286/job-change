@@ -1,11 +1,12 @@
 // ─── 날짜 유틸 ───────────────────────────────────────────────
 function today() {
-  return new Date().toISOString().slice(0, 10);
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 function formatDate(dateStr) {
-  const d = new Date(dateStr);
+  const [y, m, d] = dateStr.split('-').map(Number);
   const days = ['일', '월', '화', '수', '목', '금', '토'];
-  return `${d.getMonth() + 1}월 ${d.getDate()}일 (${days[d.getDay()]})`;
+  return `${m}월 ${d}일 (${days[new Date(y, m - 1, d).getDay()]})`;
 }
 function formatMinutes(min) {
   if (!min) return '0분';

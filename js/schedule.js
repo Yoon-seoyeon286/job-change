@@ -29,7 +29,8 @@ function minutesToTime(totalMin) {
 function generateSchedule(dateStr) {
   const allSubjects = Storage.getSubjects();
   const config      = Storage.getConfig();
-  const dayOfWeek   = new Date(dateStr).getDay(); // 0=일 ~ 6=토
+  const [y, mo, d] = dateStr.split('-').map(Number);
+  const dayOfWeek   = new Date(y, mo - 1, d).getDay(); // 0=일 ~ 6=토
   const weeklyPlan  = Storage.getWeeklyPlan();
 
   let startMin = parseTime(config.startTime);
