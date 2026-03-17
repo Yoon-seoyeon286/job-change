@@ -78,6 +78,7 @@ function toggleSession(index) {
   const sessions = Storage.getSessions(dateStr);
   const s        = sessions[index];
   s.done = !s.done;
+  if (s.done && !s.actualMin) s.actualMin = s.plannedMin;
   Storage.saveSessions(dateStr, sessions);
   renderDashboard();
 }
@@ -164,7 +165,9 @@ function showDayDetail(dateStr) {
     return;
   }
   const totalActual = sessions.reduce((a, s) => a + (s.actualMin || 0), 0);
-  let html = `<div class="detail-header">${formatDate(dateStr)} · 총 ${formatMinutes(totalActual)}</div>`;
+  let html = `<div class="detail-header">${formatDate(dateStr)} · 총 ${formatMinutes(totalActual)}
+    <button onclick="deleteDayRecord('${dateStr}')" style="float:right;background:#ef4444;color:#fff;border:none;border-radius:6px;padding:2px 10px;font-size:0.8rem;cursor:pointer;">삭제</button>
+  </div>`;
   html += sessions.map(s => {
     const subj = subjects.find(x => x.id === s.subjectId) || {};
     return `<div class="detail-row ${s.done ? 'done' : ''}">
@@ -174,6 +177,15 @@ function showDayDetail(dateStr) {
     </div>`;
   }).join('');
   document.getElementById('day-detail').innerHTML = html;
+}
+
+function deleteDayRecord(dateStr) {
+  if (!confirm(`${formatDate(dateStr)} 기록을 삭제할까요?`)) return;
+  const all = Storage.getAllSessions();
+  delete all[dateStr];
+  localStorage.setItem('sessions', JSON.stringify(all));
+  renderHistory();
+  document.getElementById('day-detail').innerHTML = '';
 }
 
 function prevMonth() { historyMonth.setMonth(historyMonth.getMonth() - 1); renderHistory(); }
