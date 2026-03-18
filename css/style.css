@@ -138,8 +138,25 @@ html, body {
   opacity: .55;
   border-color: var(--success);
 }
+.session-card.failed {
+  opacity: .55;
+  border-color: var(--danger);
+}
+.session-card.failed .check-btn {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: #fff;
+}
 
-.session-left { display: flex; align-items: center; gap: 12px; }
+.session-left { display: flex; align-items: center; gap: 10px; }
+
+.check-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
 
 .check-btn {
   width: 28px; height: 28px;
@@ -200,6 +217,75 @@ html, body {
   padding: 4px 10px;
   font-size: 12px;
   font-weight: 600;
+}
+
+.fail-badge {
+  background: rgba(239,68,68,.15);
+  color: var(--danger);
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.fail-btn {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--danger);
+  background: transparent;
+  color: var(--danger);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  line-height: 1;
+}
+
+.session-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.timer-btn {
+  background: var(--surface2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 5px 10px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.timer-display {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--warning);
+  font-variant-numeric: tabular-nums;
+  min-width: 52px;
+  text-align: center;
+}
+
+.timer-done-btn {
+  background: var(--success);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.timer-stop-btn {
+  background: transparent;
+  color: var(--danger);
+  border: 1px solid var(--danger);
+  border-radius: 8px;
+  padding: 5px 10px;
+  font-size: 12px;
+  cursor: pointer;
 }
 
 /* ─── 모달 ──────────────────────────────────────────────────── */

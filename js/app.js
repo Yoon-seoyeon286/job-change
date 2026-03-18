@@ -28,6 +28,75 @@ function showView(name) {
   if (name === 'settings')  renderSettings();
 }
 
+// ─── 타이머 ────────────────────────────────────────────────────
+let timerState = null;
+
+function formatTimer(seconds) {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+
+function startTimer(index) {
+  if (timerState) clearInterval(timerState.intervalId);
+  const sessions = Storage.getSessions(today());
+  const s = sessions[index];
+  timerState = { index, total: s.plannedMin * 60, remaining: s.plannedMin * 60, intervalId: null };
+  timerState.intervalId = setInterval(tickTimer, 1000);
+  renderDashboard();
+}
+
+function tickTimer() {
+  if (!timerState) return;
+  timerState.remaining--;
+  if (timerState.remaining <= 0) {
+    const idx = timerState.index;
+    clearInterval(timerState.intervalId);
+    timerState = null;
+    const sessions = Storage.getSessions(today());
+    sessions[idx].done = true;
+    sessions[idx].actualMin = sessions[idx].plannedMin;
+    Storage.saveSessions(today(), sessions);
+    showToast('⏰ 시간 완료!');
+    renderDashboard();
+    return;
+  }
+  const el = document.getElementById(`timer-${timerState.index}`);
+  if (el) el.textContent = formatTimer(timerState.remaining);
+}
+
+function stopTimer(complete) {
+  if (!timerState) return;
+  const idx     = timerState.index;
+  const elapsed = Math.round((timerState.total - timerState.remaining) / 60);
+  clearInterval(timerState.intervalId);
+  timerState = null;
+  const sessions = Storage.getSessions(today());
+  if (complete) {
+    sessions[idx].done = true;
+    sessions[idx].actualMin = elapsed || sessions[idx].plannedMin;
+  } else {
+    sessions[idx].done = true;
+    sessions[idx].failed = true;
+    sessions[idx].actualMin = 0;
+  }
+  Storage.saveSessions(today(), sessions);
+  renderDashboard();
+}
+
+function failSession(index) {
+  if (timerState && timerState.index === index) {
+    clearInterval(timerState.intervalId);
+    timerState = null;
+  }
+  const sessions = Storage.getSessions(today());
+  sessions[index].done = true;
+  sessions[index].failed = true;
+  sessions[index].actualMin = 0;
+  Storage.saveSessions(today(), sessions);
+  renderDashboard();
+}
+
 // ─── 대시보드 ─────────────────────────────────────────────────
 function renderDashboard() {
   const dateStr  = today();
@@ -48,13 +117,32 @@ function renderDashboard() {
 
   const list = document.getElementById('session-list');
   list.innerHTML = sessions.map((s, i) => {
-    const subj = subjects.find(x => x.id === s.subjectId) || {};
+    const subj     = subjects.find(x => x.id === s.subjectId) || {};
+    const isRunning = timerState && timerState.index === i;
+
+    let rightContent;
+    if (s.failed) {
+      rightContent = `<span class="fail-badge">실패</span>`;
+    } else if (s.done) {
+      rightContent = `<span class="done-badge">완료</span>`;
+    } else if (isRunning) {
+      rightContent = `<span class="timer-display" id="timer-${i}">${formatTimer(timerState.remaining)}</span>
+        <button class="timer-done-btn" onclick="stopTimer(true)">완료</button>
+        <button class="timer-stop-btn" onclick="stopTimer(false)">포기</button>`;
+    } else {
+      rightContent = `<button class="timer-btn" onclick="startTimer(${i})">⏱</button>
+        <button class="start-btn" onclick="openActualModal(${i})">기록</button>`;
+    }
+
     return `
-    <div class="session-card ${s.done ? 'done' : ''}" data-index="${i}">
+    <div class="session-card ${s.failed ? 'failed' : s.done ? 'done' : ''}" data-index="${i}">
       <div class="session-left">
-        <button class="check-btn" onclick="toggleSession(${i})" aria-label="완료 토글">
-          ${s.done ? '✓' : ''}
-        </button>
+        <div class="check-group">
+          <button class="check-btn" onclick="toggleSession(${i})" aria-label="완료 토글">
+            ${s.failed ? '↩' : s.done ? '✓' : ''}
+          </button>
+          ${!s.done ? `<button class="fail-btn" onclick="failSession(${i})" title="실패">✗</button>` : ''}
+        </div>
         <div class="session-info">
           <div class="session-name">
             <span class="subject-dot" style="background:${subj.color}"></span>
@@ -64,10 +152,7 @@ function renderDashboard() {
         </div>
       </div>
       <div class="session-right">
-        ${s.done
-          ? `<span class="done-badge">완료</span>`
-          : `<button class="start-btn" onclick="openActualModal(${i})">기록</button>`
-        }
+        ${rightContent}
       </div>
     </div>`;
   }).join('');
@@ -77,8 +162,19 @@ function toggleSession(index) {
   const dateStr  = today();
   const sessions = Storage.getSessions(dateStr);
   const s        = sessions[index];
-  s.done = !s.done;
-  if (s.done && !s.actualMin) s.actualMin = s.plannedMin;
+  if (s.done) {
+    s.done = false;
+    s.failed = false;
+    s.actualMin = 0;
+    if (timerState && timerState.index === index) {
+      clearInterval(timerState.intervalId);
+      timerState = null;
+    }
+  } else {
+    s.done = true;
+    s.failed = false;
+    if (!s.actualMin) s.actualMin = s.plannedMin;
+  }
   Storage.saveSessions(dateStr, sessions);
   renderDashboard();
 }
