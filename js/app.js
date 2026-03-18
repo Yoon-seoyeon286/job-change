@@ -108,7 +108,7 @@ function renderDashboard() {
   document.getElementById('dash-time-range').textContent =
     `${config.startTime} ~ ${config.endTime}`;
 
-  const done  = sessions.filter(s => s.done).length;
+  const done  = sessions.filter(s => s.done && !s.failed).length;
   const total = sessions.length;
   const pct   = total ? Math.round((done / total) * 100) : 0;
 
@@ -237,7 +237,7 @@ function renderHistory() {
     const isToday  = dateStr === todayStr;
     let dot = '';
     if (sessions) {
-      const done  = sessions.filter(s => s.done).length;
+      const done  = sessions.filter(s => s.done && !s.failed).length;
       const total = sessions.length;
       const pct   = total ? done / total : 0;
       const color = pct === 1 ? '#10b981' : pct > 0 ? '#f59e0b' : '#ef4444';
@@ -313,8 +313,6 @@ function renderStats() {
   });
 
   // 총 공부 시간 및 연속 일수
-  const allDates    = Object.keys(allSessions).sort();
-  const todayStr    = today();
   let streak = 0;
   for (let i = 0; ; i++) {
     const d = new Date(); d.setDate(d.getDate() - i);
