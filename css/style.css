@@ -618,3 +618,113 @@ html, body {
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+
+/* ─── 통계 기간 선택 ────────────────────────────────────────── */
+.period-selector {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+.period-btn {
+  flex: 1;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--muted);
+  font-size: 13px;
+  padding: 8px 0;
+  cursor: pointer;
+  transition: all .15s;
+}
+.period-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+
+/* ─── 과목 관리 ─────────────────────────────────────────────── */
+.add-subj-btn {
+  width: 100%;
+  background: none;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  color: var(--accent2);
+  font-size: 14px;
+  padding: 12px;
+  cursor: pointer;
+  margin-bottom: 8px;
+  transition: background .15s;
+}
+.add-subj-btn:hover { background: var(--surface2); }
+
+.weight-badge {
+  font-size: 11px;
+  font-weight: 700;
+  border: 1px solid;
+  border-radius: 5px;
+  padding: 1px 5px;
+  flex-shrink: 0;
+}
+
+.edit-subj-btn {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--muted);
+  font-size: 11px;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+.del-subj-btn {
+  background: none;
+  border: 1px solid var(--danger);
+  border-radius: 6px;
+  color: var(--danger);
+  font-size: 11px;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+
+/* ─── 과목 모달 인풋 ────────────────────────────────────────── */
+.subj-name-input { width: 150px; text-align: left; }
+.subj-icon-input { width: 70px; text-align: center; font-size: 18px; }
+.subj-color-input {
+  width: 48px; height: 36px;
+  border: none; border-radius: 8px;
+  cursor: pointer; background: none; padding: 2px;
+}
+.subj-weight-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.subj-weight-row input[type="range"] { width: 90px; }
+
+/* ─── 데이터 관리 ───────────────────────────────────────────── */
+.data-actions {
+  display: flex;
+  gap: 10px;
+}
+.data-btn {
+  flex: 1;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  font-size: 13px;
+  padding: 12px;
+  cursor: pointer;
+  text-align: center;
+  transition: background .15s;
+  display: block;
+}
+.data-btn:hover { background: var(--surface2); }
+
+/* ─── 앱 버전 ───────────────────────────────────────────────── */
+.app-version {
+  text-align: center;
+  color: var(--muted);
+  font-size: 11px;
+  padding: 12px 0 4px;
+}
